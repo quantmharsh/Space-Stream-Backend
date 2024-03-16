@@ -114,7 +114,7 @@ const followUnfollowUser =async(req,res)=>{
         return res.status(401).json({message:"No user found"});
     }
     //check whether are we already following that particular user
-    const isFollowing= currentUser.following.include(id);
+    const isFollowing= currentUser.following.includes(id);
     // if we are already following then  we will unfollow  else follow
     //for this we have to make two changes 1. in following list of current user and 2. followers list of  usertomodify
 
