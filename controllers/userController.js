@@ -1,6 +1,7 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import generateTokenAndSetCookie from "../utils/helpers/generateTokenAndSetCookie.js";
+import {v2  as cloudinary} from "cloudinary";
 
 const signupUser=  async(req ,res)=>{
     // res.send("signed up succesfully")
@@ -35,7 +36,9 @@ const signupUser=  async(req ,res)=>{
                 _id:newUser._id,
                 name:newUser.name,
                  email:newUser.email,
-                 username:newUser.username
+                 username:newUser.username,
+                 bio:newUser.bio,
+                 profilePic:newUser.profilePic
 
             })
         }
@@ -74,7 +77,9 @@ const loginUser= async(req ,res)=>{
             id:user._id,
             name:user.name,
             email:user.email,
-            username:user.username
+            username:user.username,
+            bio:user.bio,
+            profilePic:user.profilePic
         });
 
         
@@ -142,15 +147,22 @@ const followUnfollowUser =async(req,res)=>{
  }
 }
 const updateUser=async(req ,res)=>{
+    const{name , email , username , bio , password} = req.body;
+    const userId=req.user._id;
+    console.log("userid in usercontroller",userId)
+    let {profilePic }= req.body;
+   
     try {
-        const{name , email , username , bio , profilePic , password} = req.body;
+       
         // here also getting userId from req.user._id where we are getting this from middleware protectRoute 
-        const userId=req.user._id;
         let user= await User.findById(userId);
+        console.log("user data in usercontroller ", user);
+        
         if(!user)
         {
             return res.status(401).json({message:"user not found"});
         }
+       
         // if condition to check that only same logged in user can update its profile
         if(req.params.id !== userId.toString())
         {
@@ -164,12 +176,26 @@ const updateUser=async(req ,res)=>{
         // update user password
         user.password=hashedPassword;
         }
+        // update profile pic using cloudinary
+        if(profilePic)
+        {
+            // delete previous file on cloudinary
+            if(user.profilePic)
+            {
+                await cloudinary.uploader.destroy(user.profilePic.split("/").pop().split(".")[0]);
+            }
+            const uploadResponse=await cloudinary.uploader.upload(profilePic);
+            profilePic=uploadResponse.secure_url;
+        }
         user.name= name ||user.name;
         user.email=email ||user.email;
         user.username= username ||user.username;
         user.bio= bio||user.bio;
         user.profilePic= profilePic||user.profilePic;
        user=  await user.save();
+    //    we are doing this because we dont want to send password as a response  in  frontend
+    
+       user.password=null;
        res.status(200).json({message:"user data  updated successfully" , user})
 
 

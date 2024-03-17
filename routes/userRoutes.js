@@ -12,6 +12,6 @@ router.post("/logout",logoutUser)
 // protectRoute is  a middleware which we are using to check whether user is logged in or not to perform particular task
 
 router.post("/follow/:id" , protectRoute, followUnfollowUser)
-router.post("/update/:id" , protectRoute, updateUser)
+router.put("/update/:id" , protectRoute, updateUser)
 router.get("/profile/:username" , getUserProfile)
 export default router;
