@@ -74,7 +74,7 @@ const loginUser= async(req ,res)=>{
         // generating tokens when user logs in
         generateTokenAndSetCookie(user._id  ,res);
         res.status(200).json({
-            id:user._id,
+            _id:user._id,
             name:user.name,
             email:user.email,
             username:user.username,
@@ -194,9 +194,9 @@ const updateUser=async(req ,res)=>{
         user.profilePic= profilePic||user.profilePic;
        user=  await user.save();
     //    we are doing this because we dont want to send password as a response  in  frontend
-    
+
        user.password=null;
-       res.status(200).json({message:"user data  updated successfully" , user})
+       res.status(200).json(user)
 
 
 
