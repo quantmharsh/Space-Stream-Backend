@@ -34,7 +34,7 @@ const createPost=async(req ,res)=>{
         }
         const newPost= new Post({postedBy , text , img});
         await newPost.save();
-        return res.status(200).json({message:"post created successfully" , newPost})
+        return res.status(200).json(newPost)
 
         }
         
@@ -52,7 +52,7 @@ const getPost=async(req ,res)=>{
             res.status(500).json({message:"post not found"})
            
         }
-        return res.status(201).json({message:"post found " ,post})
+        return res.status(201).json(post)
         
     } catch (error) {
         res.status(500).json({message:error.message})
@@ -70,6 +70,12 @@ const deletePost=async(req ,res)=>{
     if(post.postedBy.toString()!==req.user._id.toString())
     {
         return res.status(401).json({message:"doesnt have rights to delete the post"})
+    }
+    // delete image from cloudinary also
+    if(post.img)
+    {
+        const imgId=post.img.split("/").pop().split(".")[0];
+        await cloudinary.uploader.destroy(imgId);
     }
     await Post.findByIdAndDelete(req.params.id);
     return res.status(200).json({message:"post delted successfully"});
@@ -129,9 +135,10 @@ const replyPost=async(req ,res)=>{
         }
         // create reply object
         const reply= {userId , text, userProfilePic , username};
+        console.log("username in reply post" , username)
         post.replies.push(reply);
-        await Post.save();
-        return res.status(201).json({message:"Replied to post successfully..."});
+        await post.save();
+        return res.status(201).json(reply);
 
         
     } catch (error) {
@@ -142,22 +149,45 @@ const replyPost=async(req ,res)=>{
 const getFeedPost=async(req ,res)=>{
     try {
         const userId= req.user._id;
+        console.log("userId in post controller get feedpost" , userId);
         const user= await User.findById(userId);
         if(!user)
         {
+            console.log("no user in getfeedpost");
             return res.status(401).json({message:"user not found"});
+           
 
         }
         // get all the user data whom this user is following from it following list
         const following=user.following;
         // show only this user post whose postedBy id matches the id present in logged in user following array
-        const feedPosts=await Post.find({postedBy :{$in :following}}).sort({createdAt:-1});
-        res.status(201).json({feedPosts});
+        const feedPosts=await Post.find({postedBy :{$in: following}}).sort({createdAt:-1});
+        console.log("FeedPosts" , feedPosts);
+        
+        res.status(201).json(feedPosts);
         
     } catch (error) {
-        res.status(500).json({message:error.message})
+        res.status(500).json(error.message)
         console.log("error while  getting  post feed " ,error)
         
     }
 }
-export  {createPost ,getPost ,deletePost , likeUnlikePost , replyPost ,getFeedPost} 
+const getUserPosts= async(req ,res)=>
+{
+    const{username}=req.params;
+    try {
+        const user= await User.findOne({username});
+        if(!user)
+        {
+            return res.status(401).json({error:"user not found"});
+        }
+        // sort in descending order latest post  at first
+        const posts= await Post.find({postedBy:user._id}).sort({createdAt:-1})
+        res.status(200).json(posts);
+        
+    } catch (error) {
+        return res.status(401).json({error:error.message});
+        
+    }
+}
+export  {createPost ,getPost ,deletePost , likeUnlikePost , replyPost ,getFeedPost , getUserPosts} 

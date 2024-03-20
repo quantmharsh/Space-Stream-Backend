@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 const  postSchema=mongoose.Schema({
     postedBy:{
         type: mongoose.Schema.Types.ObjectId,
-        ref:'User',
+        ref: "User",
+
         required:true
     } ,
     text:{
@@ -14,14 +15,16 @@ const  postSchema=mongoose.Schema({
     },
     likes:{
         type:[mongoose.Schema.Types.ObjectId],
-        ref:'User',
+        ref: "User",
+
         default:[]
     },
     replies:[
         {
             userId:{
                 type:mongoose.Schema.Types.ObjectId,
-                ref:'User',
+                ref: "User",
+
                 required:true
             } ,
             text:{

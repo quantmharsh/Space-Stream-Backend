@@ -2,6 +2,8 @@ import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import generateTokenAndSetCookie from "../utils/helpers/generateTokenAndSetCookie.js";
 import {v2  as cloudinary} from "cloudinary";
+import mongoose from "mongoose";
+import Post from "../models/postModel.js";
 
 const signupUser=  async(req ,res)=>{
     // res.send("signed up succesfully")
@@ -193,6 +195,19 @@ const updateUser=async(req ,res)=>{
         user.bio= bio||user.bio;
         user.profilePic= profilePic||user.profilePic;
        user=  await user.save();
+       // Find all posts that this user replied and update username and userProfilePic fields
+       await Post.updateMany(
+        { 
+            "replies.userId":userId
+        },
+        {
+            $set:{
+                "replies.$[reply].username":user.username,
+                "replies.$[reply].userProfilePic":user.profilePic
+            }
+        },
+        {arrayFilters:[{"reply.userId":userId}]}
+        )
     //    we are doing this because we dont want to send password as a response  in  frontend
 
        user.password=null;
@@ -210,8 +225,17 @@ const updateUser=async(req ,res)=>{
 }
 const getUserProfile=async(req,res)=>{
     try {
-        const {username}= req.params;
-        const user= await User.findOne({username}).select("-password").select("-updatedAt");
+        // fetching user details using  username or  userId .thats why using query
+        const {query}= req.params;
+        let user;
+        if(mongoose.Types.ObjectId.isValid(query))
+        {
+           user = await User.findOne({_id:query}).select("-password").select("-updatedaAt");
+        }
+        else{
+           user= await User.findOne({username:query}).select("-password").select("-updatedAt");
+        }
+       
         
         if(!user)
         {
