@@ -19,7 +19,7 @@ const createPost=async(req ,res)=>{
         // requested user -----------user coming from db
         if(req.user._id.toString()!= user._id.toString())
         {
-            return res.status(401).json({message:"cant editany another  user post"})
+            return res.status(401).json({message:"cant edit any another  user post"})
         }
         const maxLength=500;
         if(text.length >maxLength)
