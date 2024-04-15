@@ -6,9 +6,10 @@ import  userRoutes from "./routes/userRoutes.js"
 import postRoutes from"./routes/postRoutes.js"
 import messageRoutes from"./routes/messageRoutes.js"
 import {v2 as cloudinary} from "cloudinary"
+import {server , app } from "./socket/socket.js"
 dotenv.config();
 connectDB();
-const app=express();
+// const app=express();
 
 const PORT=process.env.PORT ||5000
 // to parse  json data in req.body
@@ -27,7 +28,14 @@ cloudinary.config({
 app.use("/api/users",userRoutes)
 app.use("/api/posts" ,postRoutes)
 app.use("/api/messages" ,messageRoutes)
-app.listen(PORT , ()=>
+// app.listen(PORT , ()=>
+
+// console.log("app listening on port.." ,PORT)
+ 
+// )
+
+// since we arre using socket so we need to listn on server which is http server which includes socket
+server.listen(PORT , ()=>
 
 console.log("app listening on port.." ,PORT)
  

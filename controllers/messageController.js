@@ -1,5 +1,7 @@
 import Conversation from "../models/conversationModel.js";
 import Message from "../models/messageModel.js";
+import { getReciepentSocketId, io } from "../socket/socket.js";
+
 
 const sendMessage=async(req , res)=>{
     try {
@@ -42,8 +44,15 @@ const sendMessage=async(req , res)=>{
                 }
             })
         ])
-        res.status(201).json(newMessage);
+        // using web socket for real time update to reciver which is sending event to 1 user  
+        const recipientSocketId= getReciepentSocketId(recipientId);
+        if(recipientSocketId)
+        {
+            io.to(recipientSocketId).emit("newMessage" , newMessage)
+        }
 
+        return   res.status(201).json(newMessage);
+Q
         
     } catch (error) {
         res.status(500).json({error: error.message})
