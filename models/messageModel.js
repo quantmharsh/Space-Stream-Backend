@@ -9,7 +9,11 @@ const  messageSchema=  new mongoose.Schema({
         ref:"User"
 
     },
-    text: String
+    text: String ,
+    seen:{
+        type:Boolean ,
+        default:false
+    }
 },{timestamps:true})
 const Message= mongoose.model("Message" , messageSchema)
 export default Message;
