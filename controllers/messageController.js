@@ -1,12 +1,14 @@
 import Conversation from "../models/conversationModel.js";
 import Message from "../models/messageModel.js";
 import { getReciepentSocketId, io } from "../socket/socket.js";
+import {v2  as cloudinary} from "cloudinary";
 
 
 const sendMessage=async(req , res)=>{
     try {
         // get receiver and message from body
         const{recipientId , message}=req.body;
+        let{img}=req.body;
         //sender will be the user who is logged in
         const senderId= req.user._id;
         //find whether previously both user have converastion or not
@@ -27,10 +29,18 @@ const sendMessage=async(req , res)=>{
         }
         await conversation.save();
         // we have to also create message so doing this here
+        //chek whether user is sending image also
+        if(img)
+        {
+            const uploadedResponse= await cloudinary.uploader.upload(img);
+            //after uploading image on cloudinary store it url in img and then on database
+            img= uploadedResponse.secure_url;
+        }
         const newMessage= new Message({
             conversationId: conversation._id,
             sender:senderId ,
-            text:message
+            text:message,
+            img:img||""
         });
         //using pomisies so that we can complete both task fast
         //we will save the message 
