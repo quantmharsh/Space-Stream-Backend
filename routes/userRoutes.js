@@ -1,5 +1,5 @@
 import  express from "express";
-import { signupUser , loginUser , logoutUser , followUnfollowUser , updateUser  , getUserProfile} from "../controllers/userController.js";
+import { signupUser , loginUser , logoutUser , followUnfollowUser , updateUser  , getUserProfile ,getSuggestedUsers , freezeAccount} from "../controllers/userController.js";
 const router= express.Router();
 import protectRoute from  "../middlewares/protectRoute.js"
 
@@ -13,5 +13,9 @@ router.post("/logout",logoutUser)
 
 router.post("/follow/:id" , protectRoute, followUnfollowUser)
 router.put("/update/:id" , protectRoute, updateUser)
+// step 3 create a route in  backend (next step in usercontroller)
+router.put("/freeze" , protectRoute, freezeAccount)
+
 router.get("/profile/:query" , getUserProfile)
+router.get("/suggested" ,protectRoute  ,getSuggestedUsers)
 export default router;
