@@ -249,7 +249,7 @@ const getUserProfile=async(req,res)=>{
         
         if(!user)
         {
-            return res.status(401).json({message:"user profile  not found"});
+            return res.status(401).json({error:"user profile  not found "});
         }
          res.status(202).json(user);
         
